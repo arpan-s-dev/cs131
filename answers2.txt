@@ -1,0 +1,55 @@
+PART B — grep & Regex (Yelp Open Dataset)
+
+B1:
+grep '"city":"Santa Barbara"' /data/yelp/yelp_academic_dataset_business.json
+
+B2:
+grep -c '"state":"CA"' /data/yelp/yelp_academic_dataset_business.json
+Answer: 5203. The -c option returns a count instead of the lines.
+
+B3:
+grep -i 'worth' /data/yelp/yelp_academic_dataset_review.json
+The -i option makes the match case-insensitive.
+
+B4:
+grep -E 'Coffee|Café|Cafe' /data/yelp/yelp_academic_dataset_business.json
+
+B5:
+grep -E '"stars":(4\.5|5\.0)' /data/yelp/yelp_academic_dataset_business.json
+
+B6:
+grep -E '"stars":5,' /data/yelp/yelp_academic_dataset_review.json
+
+B7:
+grep -E '\w+@[\w.]+\.[A-Za-z]{2,}' /data/yelp/yelp_academic_dataset_review.json
+
+B8:
+grep -E '[0-9]{3}-[0-9]{3}-[0-9]{4}' /data/yelp/yelp_academic_dataset_review.json
+
+B9:
+grep -E '"name":"P' /data/yelp/yelp_academic_dataset_business.json
+
+B10:
+grep -ic 'pizza' /data/yelp/yelp_academic_dataset_review.json
+
+B11:
+grep -n 'service' /data/yelp/yelp_academic_dataset_review.json
+The -n option prints line numbers.
+
+B12:
+grep -v 'Restaurants' /data/yelp/yelp_academic_dataset_business.json
+The -v option inverts the match.
+
+B13:
+grep '"state":"CA"' /data/yelp/yelp_academic_dataset_business.json \
+  | grep -oE '"review_count":[0-9]+' \
+  | grep -oE '[0-9]+' \
+  | sort -nr | head -3
+Stage explanation:
+grep '"state":"CA"' selects California business lines | grep -oE '"review_count":[0-9]+' extracts the review_count field | grep -oE '[0-9]+' strips to the bare number | sort -nr orders numerically descending | head -3 keeps the top 3.
+
+B14:
+grep '"city":"Santa Barbara"' /data/yelp/yelp_academic_dataset_business.json \
+  | grep -oE '"name":"[^"]*"' \
+  | sed 's/"name":"//; s/"$//' \
+  | sort
