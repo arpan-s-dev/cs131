@@ -1,2 +1,4 @@
 Q1: echo "task: practice git" >> notes.md && git add notes.md && git commit -m "ws2: add task line"
 Q2: git log --oneline -3
+Q3: <hash> (ws2: bad change)
+Q4: git revert 6258a09
