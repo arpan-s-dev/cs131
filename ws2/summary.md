@@ -1,2 +1,2 @@
 # Summary
-Branch-specific update
+Main and branch updates combined
