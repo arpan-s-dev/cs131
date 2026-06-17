@@ -2,3 +2,12 @@ Q1: echo "task: practice git" >> notes.md && git add notes.md && git commit -m "
 Q2: git log --oneline -3
 Q3: <hash> (ws2: bad change)
 Q4: git revert 6258a09
+Q11: git merge conflict-branch
+     conflicted file: summary.md
+Q12: git status --short
+Q13: edited summary.md, removed <<<<<<< ======= >>>>>>> markers, kept combined version
+Q14: git add summary.md
+     git commit --no-edit
+Q15: git fetch origin
+     git log HEAD..origin/main --oneline
+Q16: git fetch only downloads remote changes without merging; git pull does a fetch followed by an automatic merge into your current branch.
