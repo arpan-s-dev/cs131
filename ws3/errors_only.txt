@@ -1,0 +1,3 @@
+ERROR: disk full
+ERROR: timeout
+ERROR: null pointer

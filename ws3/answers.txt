@@ -1,0 +1,23 @@
+A1: ls -l > listing.txt ; date >> listing.txt
+A3: ls /nonexistent_dir /etc >output.txt 2>errors.txt
+A4: ls /nonexistent_dir /etc &>combined.txt
+A5: ls /nonexistent_dir /etc 2>/dev/null  # only /etc prints; error discarded to /dev/null (a black-hole device that throws away all input)
+A6: sort fruits.txt | uniq
+A7: sort fruits.txt | uniq -c | sort -rn
+A8: grep -c ERROR server.log
+A9: grep ERROR server.log > errors_only.txt
+A10: grep -oE '^[A-Z]+' server.log | sort | uniq -c | sort -rn
+A11: grep -oE '"state":"[A-Z]+"' /data/yelp/yelp_academic_dataset_business.json | sort | uniq -c | sort -rn | head -5
+B1: id   # uid=1061 gid=1061 groups=ishigaki-cs28,video,docker,render -- uid identifies the user, gid identifies the primary group
+B2: ls -l fruits.txt  # -rw-rw-r-- : owner=rw, group=rw, other=r
+B3: umask  # 0002 -> 666-002=664 -rw-rw-r-- ; verified via touch testfile.txt
+B4: chmod 000 secret.txt ; cat -> Permission denied ; chmod u+rw secret.txt
+B5: chmod 640 fruits.txt  # octal 640 = owner rw, group r, other none
+B6: find . -type f -user "$(whoami)" -perm -u+w
+C1: bash long.sh > log.txt &   # records PID, tail log.txt shows ticks
+C2: jobs  # shows job number, status, and command
+C3: fg ; Ctrl-Z to suspend ; jobs shows Stopped
+C4: bg   # resumes suspended job in background; jobs shows Running
+C5: kill %1 ; jobs confirms gone. Default signal is SIGTERM (15)
+C6: bash long.sh > log.txt & ; disown %1 ; jobs empty ; ps -p <PID> confirms still running
+C7: disown removes the job from the shell's job table so it no longer receives SIGHUP when the terminal closes, while a regular & job stays in the table and gets SIGHUP (which kills it) on terminal close.
