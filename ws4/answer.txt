@@ -38,7 +38,7 @@ actual move.
 
 T2: My own .bashrc
 
-https://github.com/arpan-s-dev/cs131/blob/7c787365972a7d58a21f7de3a49da13579aa4f68/ws4/.bashrc#L122
+https://github.com/arpan-s-dev/cs131/blob/afc14b402e4515a56472b227bf152ebf6bc79557/ws4/.bashrc#L120
 
 alias cs131='cd ~/cs131'
 
@@ -47,7 +47,7 @@ jumping back there from wherever else I'm working on this DGX box. This
 alias turns that into one word instead of typing the full path every
 time.
 
-https://github.com/arpan-s-dev/cs131/blob/7c787365972a7d58a21f7de3a49da13579aa4f68/ws4/.bashrc#L127
+https://github.com/arpan-s-dev/cs131/blob/afc14b402e4515a56472b227bf152ebf6bc79557/ws4/.bashrc#L122
 
 wsnew ()
 
@@ -60,7 +60,7 @@ which would otherwise create a directory named after nothing useful.
 Otherwise it runs `mkdir -p ~/cs131/"$1"`, `touch` the answer.txt inside
 it, and `cd`s there.
 
-https://github.com/arpan-s-dev/cs131/blob/7c787365972a7d58a21f7de3a49da13579aa4f68/ws4/.bashrc#L141
+https://github.com/arpan-s-dev/cs131/blob/afc14b402e4515a56472b227bf152ebf6bc79557/ws4/.bashrc#L133
 
 if command -v nvidia-smi >/dev/null 2>&1; then
 
