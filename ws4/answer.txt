@@ -1,0 +1,73 @@
+T1: Two functions from the sample .bashrc
+
+https://gist.github.com/zachbrowne/8bc414c9f30192067831fafebd14255c#file-the-ultimate-bad-ass-bashrc-file-L244
+
+extract ()
+
+This function takes any number of archive filenames as arguments and
+extracts each one using the right tool for its extension, so the user
+doesn't have to remember whether a given file needs tar, gunzip, unzip,
+7z, etc. It loops over every argument with `for archive in $*`. Inside
+the loop, `if [ -f $archive ]` first checks that the argument is an
+actual regular file; if it isn't, the else branch prints
+"'$archive' is not a valid file!" and moves on instead of crashing.
+When the file check passes, a `case $archive in ... esac` block pattern-
+matches the filename against a list of extensions (*.tar.bz2, *.tar.gz,
+*.zip, *.7z, etc.) and runs the matching decompression command for that
+pattern (tar xvjf, tar xvzf, unzip, 7z x, ...). The final `*)` case is a
+catch-all: if the extension matches none of the known patterns, it
+echoes "don't know how to extract '$archive'...", so unsupported types
+fail gracefully instead of throwing a raw shell error.
+
+https://gist.github.com/zachbrowne/8bc414c9f30192067831fafebd14255c#file-the-ultimate-bad-ass-bashrc-file-L329
+
+up ()
+
+This function moves the current shell up N parent directories in one
+call, e.g. `up 3` is a shortcut for `cd ../../..`. It takes the number
+of levels as `limit=$1` and builds a relative path by looping
+`for ((i=1; i<=limit; i++))`, appending "/.." to the string `d` on each
+iteration. That leaves a leading slash (e.g. "/../../.."), so
+`d=$(echo $d | sed 's/^\///')` strips just the first character to turn
+it into a valid relative path ("../../.."). The `if [ -z "$d" ]` check
+handles the edge case where `limit` was 0 or empty and the loop never
+ran, leaving `d` empty; in that case it falls back to `d=..` so the
+command still does something sensible (goes up one level) instead of
+running a bare `cd` with an empty argument. Finally `cd $d` performs the
+actual move.
+
+T2: My own .bashrc
+
+https://github.com/arpan-s-dev/cs131/blob/7c787365972a7d58a21f7de3a49da13579aa4f68/ws4/.bashrc#L122
+
+alias cs131='cd ~/cs131'
+
+Every worksheet for this class lives under ~/cs131, and I'm constantly
+jumping back there from wherever else I'm working on this DGX box. This
+alias turns that into one word instead of typing the full path every
+time.
+
+https://github.com/arpan-s-dev/cs131/blob/7c787365972a7d58a21f7de3a49da13579aa4f68/ws4/.bashrc#L127
+
+wsnew ()
+
+Every worksheet in this course follows the same setup: make a new
+directory under ~/cs131, create an answer.txt inside it, and cd in. This
+function does all three in one command, e.g. `wsnew ws5`. It checks
+`if [ -z "$1" ]` first, and if no argument was given it prints a usage
+message and returns 1 instead of silently doing `mkdir -p ~/cs131/""`,
+which would otherwise create a directory named after nothing useful.
+Otherwise it runs `mkdir -p ~/cs131/"$1"`, `touch` the answer.txt inside
+it, and `cd`s there.
+
+https://github.com/arpan-s-dev/cs131/blob/7c787365972a7d58a21f7de3a49da13579aa4f68/ws4/.bashrc#L141
+
+if command -v nvidia-smi >/dev/null 2>&1; then
+
+This machine is an NVIDIA DGX Spark, so I wanted a quick alias to watch
+GPU usage while running jobs. Instead of hard-coding the alias, I guard
+it with `command -v nvidia-smi` to check the binary actually exists on
+this PATH before defining `gpu-watch='watch -n 1 nvidia-smi'`. That way
+if I ever copy this same .bashrc to a laptop or a machine without a GPU,
+the alias just silently doesn't get defined instead of pointing at a
+command that doesn't exist.
