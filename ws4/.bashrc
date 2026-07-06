@@ -116,14 +116,9 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# ===== CS131 ws4 custom additions =====
-
-# Quick navigation to the course repo, since every worksheet lives here
+# custom additions
 alias cs131='cd ~/cs131'
 
-# Create a new worksheet directory with an answer.txt stub and jump into
-# it. Every worksheet in this course (ws1, ws2, ws3, ...) follows the same
-# "mkdir, touch answer.txt, cd in" pattern, so this saves retyping it.
 wsnew () {
 	if [ -z "$1" ]; then
 		echo "usage: wsnew <name>  (e.g. wsnew ws5)"
@@ -134,10 +129,7 @@ wsnew () {
 	cd ~/cs131/"$1"
 }
 
-# This machine is an NVIDIA DGX Spark, so nvidia-smi should always be
-# present, but only define the GPU watch alias if it actually is, so
-# this same .bashrc doesn't break if I ever copy it to a machine
-# without a GPU.
+# only define if nvidia-smi actually exists on this machine
 if command -v nvidia-smi >/dev/null 2>&1; then
 	alias gpu-watch='watch -n 1 nvidia-smi'
 fi
