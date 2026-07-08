@@ -1,0 +1,31 @@
+CS 131 Final Project — Phase 2: The Breaking Point
+Dataset: ESA Gaia DR3 gaia_source
+
+Goal: document Excel and pandas FAILING on data past their limits, then show the
+same aggregation succeeds via the command line and via PySpark. Build the
+benchmark table.
+
+============================================================================
+(a) Excel row cap
+    - Build a >1,048,576-row CSV, open in Excel -> it truncates / "File not
+      loaded completely".
+    - Screenshot: screenshots/excel_rowcap.png          [ TODO ]
+
+(b) pandas out-of-memory
+    - pd.read_csv() on the full ~15-20 GB CSV -> MemoryError / machine swaps.
+    - Screenshot: screenshots/pandas_oom.png            [ TODO ]
+
+(c) Same aggregation two ways (mean parallax) — must agree
+    - CLI (awk, streamed):   result = [ TODO ]
+    - PySpark (avg):         result = [ TODO ]
+
+Benchmark table                                          [ TODO — fill in ]
+    tool     | rows attempted | peak memory | wall-clock | outcome
+    ---------+----------------+-------------+------------+-------------------
+    Excel    |                |             |            | truncated @ 1.05M
+    pandas   |                |             |            | OOM
+    CLI awk  |                |             |            | OK
+    PySpark  |                |             |            | OK
+
+Screenshots stored under: 2_breaking/screenshots/
+============================================================================

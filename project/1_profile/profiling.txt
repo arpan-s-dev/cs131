@@ -1,0 +1,29 @@
+CS 131 Final Project — Phase 1: Profiling
+Dataset: ESA Gaia DR3 gaia_source (GaiaSource_*.csv.gz)
+
+Goal: characterize the data WITHOUT loading it into memory.
+Put `time` in front of every command and paste the command + timing/output below.
+
+NOTE: Gaia bulk CSVs start with '#' comment/units lines, then one header row,
+then comma-separated data. Inspect first:   zcat <file>.csv.gz | head -40
+Strip comments with `grep -v '^#'`; the header is one line.
+
+============================================================================
+[ TODO — record each command and its `time` output below ]
+
+# 1) Size on disk (whole slice)
+#    time du -sh ~/gaia_raw
+#    time gsutil du -sh gs://<bucket>/gaia/
+
+# 2) Row count of one partition (exclude '#' comments)
+#    time bash -c "zcat <file>.csv.gz | grep -vc '^#'"
+
+# 3) Schema — list column names with indices
+#    zcat <file>.csv.gz | grep -v '^#' | head -1 | tr ',' '\n' | nl
+
+# 4) Numeric aggregate (awk) — mean parallax over the slice
+
+# 5) Cardinality (sort | uniq -c | sort -nr) — has-RV vs no-RV split
+
+# 6) grep -c filtering count — total data rows across the slice ( > 50,000,000 )
+============================================================================

@@ -1,0 +1,22 @@
+CS 131 Final Project — Phase 3: Scaling with PySpark on Dataproc
+Dataset: ESA Gaia DR3 gaia_source, read from gs://<bucket>/gaia/*.csv.gz
+
+Goal: run the SAME Spark job on 1, 2, and 4 workers and record the runtime each
+time. Keep raw data in GCS (read via gs://). DELETE the cluster when done.
+
+PySpark code:  3_scaling/gaia_job.py     [ TODO — add code ]
+Job outputs:   3_scaling/results/        [ TODO — small aggregated CSVs ]
+
+============================================================================
+Scaling results                                         [ TODO — fill in ]
+    workers | machine type   | wall-clock | speedup vs 1 worker
+    --------+----------------+------------+--------------------
+    1       | n2-standard-4  |            | 1.00x
+    2       | n2-standard-4  |            |
+    4       | n2-standard-4  |            |
+
+Commands run (create cluster / submit pyspark job / delete cluster): [ TODO ]
+
+Reminder: verify no clusters left running ->
+    gcloud dataproc clusters list --region=<region>
+============================================================================

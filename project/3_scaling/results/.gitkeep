@@ -1,0 +1,3 @@
+# Small aggregated Spark outputs go here (NOT raw data):
+#   hr/    — HR-diagram 2-D histogram (bp_rp, abs_g, count)
+#   fast/  — top-N fastest stars by tangential velocity
