@@ -7,10 +7,18 @@
 - _Partner name / GitHub handle_ — **TODO**
 
 ## Question
-**What does the Milky Way look like, and which stars are trying to escape it?**
-- Build the Hertzsprung–Russell (color–magnitude) diagram from ~50M+ stars.
-- Compute tangential velocities and flag high-/hyper-velocity star candidates
-  (approaching the local galactic escape speed, ~500–550 km/s).
+**What do the motions of ~50M+ stars reveal about the Milky Way — the dark matter
+binding it, and the stars fast enough to escape it?**
+- **Dark matter:** build the galactic **rotation curve** (orbital speed vs. distance
+  from the galactic center). A *flat* curve — instead of the falling, Keplerian one
+  predicted by visible matter alone — is the classic fingerprint of dark matter, and
+  it sets the galaxy's escape velocity.
+- **Escaping stars:** rank stars by space velocity and count those above the escape
+  speed (~500–550 km/s); map whether the runaways trace back to the galactic center
+  (black-hole slingshots) or the disk (supernova kicks).
+
+One computed velocity per star powers both: the rotation curve sets the galaxy's
+"speed limit," and the runaway search finds the stars breaking it.
 
 ## Dataset
 ESA **Gaia DR3 `gaia_source`** — the full-sky star catalog: **1.81 billion stars**,
