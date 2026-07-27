@@ -31,51 +31,73 @@ html = f"""<!doctype html>
   @page {{ size: 11in 8.5in; margin: 0; }}
   * {{ box-sizing: border-box; }}
   body {{
-    margin: 0; font-family: "Segoe UI", Arial, sans-serif; color: #1a1a2e;
-    background: #fff; width: 11in; height: 8.5in; padding: 0.35in;
+    margin: 0; font-family: "Segoe UI", Arial, sans-serif; color: #222;
+    background: #fff; width: 11in; height: 8.5in; padding: 0.4in; line-height: 1.45;
   }}
-  header {{
-    border-bottom: 4px solid #2b5cb8; padding-bottom: 8px; margin-bottom: 12px;
-  }}
-  header h1 {{ margin: 0; font-size: 25px; color: #14213d; }}
-  header .sub {{ font-size: 13px; color: #444; margin-top: 3px; }}
-  header .repo {{ font-size: 12px; color: #2b5cb8; margin-top: 2px; }}
-  .cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }}
+  h1 {{ margin: 0; font-size: 24px; color: #1a3a6b; }}
+  .sub {{ font-size: 13px; color: #555; margin: 3px 0 0; }}
+  .repo {{ font-size: 12px; color: #1a3a6b; margin: 1px 0 0; }}
+  hr {{ border: 0; border-top: 3px solid #1a3a6b; margin: 8px 0 12px; }}
+
   h2 {{
-    font-size: 17px; margin: 0 0 8px; color: #fff; background: #2b5cb8;
-    padding: 5px 10px; border-radius: 4px;
+    font-size: 16px; color: #1a3a6b; margin: 0 0 6px;
+    border-bottom: 2px solid #1a3a6b; padding-bottom: 3px;
   }}
-  .facts {{
-    font-size: 12px; background: #eef3fb; border: 1px solid #cdd9ee;
-    border-radius: 5px; padding: 8px 10px; margin-bottom: 10px; line-height: 1.5;
-  }}
-  .facts b {{ color: #14213d; }}
+  h3 {{ font-size: 12.5px; margin: 0 0 3px; color: #1a3a6b; }}
+
+  .strip {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }}
+  .box {{ background: #f4f6fa; border: 1px solid #d6ddea; border-radius: 5px; padding: 8px 10px; font-size: 11.5px; }}
+
+  .cols {{ display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }}
+
+  .facts {{ font-size: 12px; margin-bottom: 8px; }}
+  .facts b {{ color: #1a3a6b; }}
+
   table {{ width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px; }}
-  th, td {{ border: 1px solid #ccd3e0; padding: 4px 6px; text-align: left; }}
-  th {{ background: #dbe4f5; }}
+  th, td {{ border: 1px solid #ccc; padding: 4px 6px; text-align: left; }}
+  th {{ background: #eef1f7; }}
   code {{ font-family: Consolas, monospace; font-size: 10.5px; }}
-  .callout {{
-    font-size: 12px; background: #e6f6ec; border-left: 4px solid #1f9d55;
-    padding: 7px 10px; border-radius: 4px; line-height: 1.45;
-  }}
-  .shot {{ width: 100%; border: 1px solid #999; border-radius: 4px; margin: 4px 0; }}
-  .cap {{ font-size: 11px; color: #333; margin: 0 0 10px; line-height: 1.4; }}
-  .cap b {{ color: #b21f1f; }}
-  .ok {{ color: #1f9d55; font-weight: bold; }}
-  .bad {{ color: #b21f1f; font-weight: bold; }}
-  footer {{
-    margin-top: 12px; font-size: 12.5px; text-align: center; color: #14213d;
-    border-top: 2px solid #2b5cb8; padding-top: 8px; font-weight: 600;
-  }}
+
+  .note {{ font-size: 12px; background: #eaf6ee; border-left: 4px solid #2e8b57; padding: 7px 10px; border-radius: 4px; }}
+  .shot {{ width: 100%; border: 1px solid #999; border-radius: 4px; margin: 3px 0; }}
+  .cap {{ font-size: 11px; color: #333; margin: 0 0 9px; }}
+  .cap b {{ color: #a11; }}
+  .ok {{ color: #2e8b57; font-weight: bold; }}
+  .bad {{ color: #a11; font-weight: bold; }}
+  footer {{ margin-top: 10px; font-size: 12.5px; text-align: center; color: #1a3a6b; border-top: 2px solid #1a3a6b; padding-top: 7px; }}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>The Milky Way's Hidden Mass &mdash; Big Data Profiling of Gaia DR3</h1>
-  <div class="sub">Arpanjeet Singh &nbsp;&middot;&nbsp; CS 131 Big Data &nbsp;&middot;&nbsp; Group 17 &nbsp;&middot;&nbsp; Phase 1 + 2 draft</div>
-  <div class="repo">github.com/arpan-s-dev/cs131</div>
-</header>
+<h1>The Milky Way's Hidden Mass: Profiling Gaia DR3</h1>
+<div class="sub">Arpanjeet Singh &nbsp;|&nbsp; CS 131 Big Data &nbsp;|&nbsp; Group 17 &nbsp;|&nbsp; Phases 1 and 2</div>
+<div class="repo">github.com/arpan-s-dev/cs131</div>
+<hr>
+
+<!-- ABOUT THE DATA: the three things worth explaining -->
+<div class="strip">
+  <div class="box">
+    <h3>How the sky is split (HEALPix)</h3>
+    Gaia divides the whole sky into 786,432 tiles using a method called HEALPix
+    (Hierarchical Equal Area isoLatitude Pixelization). Every tile covers the same
+    amount of sky and has a number. Equal areas keep the star counts fair.
+  </div>
+  <div class="box">
+    <h3>How the files are named</h3>
+    Each file holds all the stars in a range of tile numbers, and the file name is
+    that range. Example: <code>GaiaSource_000000-003111</code> holds tiles 0 to 3111.
+    Files are cut to about the same size (roughly 200 MB), not the same sky area, so
+    a crowded file near the Milky Way needs only a few tiles while an empty file needs
+    thousands. Either way each file holds about 500,000 stars.
+  </div>
+  <div class="box">
+    <h3>Why we took every 28th file</h3>
+    We only need part of the catalogue (over 50 million rows). We chose 121 of the
+    3,386 files. We took every 28th file, not the first 121, because files are ordered
+    by sky position. The first 121 would all sit in one small patch of sky. Every 28th
+    spreads our sample evenly across the whole sky.
+  </div>
+</div>
 
 <div class="cols">
 
@@ -83,28 +105,29 @@ html = f"""<!doctype html>
   <section>
     <h2>Profiling</h2>
     <div class="facts">
-      <b>Dataset:</b> ESA Gaia DR3 <code>gaia_source</code> &mdash; a full-sky
-      catalogue of ~1.8 billion stars.<br>
-      <b>Our slice:</b> 121 of 3,386 files (every 28th &rarr; even all-sky
-      coverage).<br>
-      <b>Size:</b> 26 GB compressed (~120 GB uncompressed) &nbsp;|&nbsp;
-      <b>Rows:</b> 64,681,399 &nbsp;|&nbsp; <b>Columns:</b> 152
+      <b>Dataset:</b> ESA Gaia DR3, a full-sky catalogue of about 1.8 billion stars.<br>
+      <b>Our slice:</b> 121 files, 26 GB compressed (about 120 GB uncompressed),
+      <b>64,681,399 rows</b>, 152 columns.
     </div>
 
+    <p style="font-size:11.5px; margin:0 0 6px;">
+      We measured the data with command-line tools that read it line by line, so
+      the file never has to fit in memory. Each command was timed.
+    </p>
+
     <table>
-      <tr><th>Command (timed, streamed)</th><th>Result</th><th>Time</th></tr>
+      <tr><th>Command (streamed, timed)</th><th>Result</th><th>Time</th></tr>
       <tr><td><code>du -sh data/</code></td><td>26 GB on disk</td><td>0.2 s</td></tr>
       <tr><td><code>zcat *.gz | grep -v '^#' | wc -l</code></td><td><b>64,681,399 rows</b></td><td>9 min</td></tr>
-      <tr><td><code>... | awk</code> mean(parallax)</td><td>0.9428 mas</td><td>5 s</td></tr>
-      <tr><td><code>... | awk | sort | uniq -c</code></td><td>mag peaks at 20</td><td>5 s</td></tr>
+      <tr><td><code>... | awk</code> average of parallax</td><td>0.9428 mas</td><td>5 s</td></tr>
+      <tr><td><code>... | awk | sort | uniq -c</code></td><td>most stars are faint</td><td>5 s</td></tr>
       <tr><td><code>... | grep -c VARIABLE</code></td><td>5,345 rows</td><td>5 s</td></tr>
     </table>
 
-    <div class="callout">
-      <b>Key result:</b> peak memory stayed at a <b>few MB</b> no matter the
-      file size &mdash; even while streaming all 26 GB. These tools read the
-      data line by line and never hold it. Requirements met:
-      <b>64.7 M rows &gt; 50 M</b> and <b>26 GB &gt; 5 GB</b>.
+    <div class="note">
+      <b>Result:</b> memory stayed at a few MB no matter how big the file was, even
+      while reading all 26 GB. The tools stream the data, they never load it. This
+      meets both rules: 64.7 million rows is over 50 million, and 26 GB is over 5 GB.
     </div>
   </section>
 
@@ -112,33 +135,32 @@ html = f"""<!doctype html>
   <section>
     <h2>Breaking</h2>
 
-    <img class="shot" src="{excel}" alt="Excel failing to open the file">
+    <img class="shot" src="{excel}" alt="Excel stuck opening the file">
     <p class="cap">
-      <b>Excel:</b> hangs opening a single raw file; can't parse the ECSV
-      metadata. Hard cap is <b>1,048,576 rows</b> &mdash; the full dataset
-      (64.7 M) is <b>61.7&times;</b> over the limit.
+      <b>Excel:</b> gets stuck just opening one raw file. Its limit is 1,048,576 rows.
+      Our full data has 64.7 million rows, about <b>62 times more</b> than Excel can hold.
     </p>
 
-    <img class="shot" src="{pandas_shot}" alt="Task Manager memory blowup">
+    <img class="shot" src="{pandas_shot}" alt="Task Manager memory full">
     <p class="cap">
-      <b>pandas <code>read_csv</code>:</b> loading just ~1/5 of the data drove
-      <b>Committed memory to 29.3 / 40.3 GB</b> &mdash; nearly 2&times; the
-      machine's 15.3 GB RAM (89% used, 1.7 GB free). Full load projects to
-      ~120 GB: <b>impossible on this machine</b>.
+      <b>pandas:</b> tries to load everything into memory. Loading only one fifth of the
+      data pushed memory use to <b>29.3 GB</b>, almost double the 15.3 GB this laptop has
+      (89 percent full, 1.7 GB free). Loading all of it would need about 120 GB, which is
+      <b>impossible on this laptop</b>.
     </p>
 
     <table>
-      <tr><th>Same aggregation</th><th>Peak memory</th><th>Outcome</th></tr>
-      <tr><td>CLI <code>zcat | awk</code></td><td>a few MB</td><td class="ok">0.9428 mas &#10003;</td></tr>
-      <tr><td>pandas <code>read_csv</code></td><td>29.3 GB committed</td><td class="bad">out of memory &#10007;</td></tr>
+      <tr><th>Same task: average of parallax</th><th>Memory used</th><th>Outcome</th></tr>
+      <tr><td>Command line (<code>zcat | awk</code>)</td><td>a few MB</td><td class="ok">0.9428 mas, done</td></tr>
+      <tr><td>pandas (<code>read_csv</code>)</td><td>29.3 GB</td><td class="bad">ran out of memory</td></tr>
     </table>
   </section>
 
 </div>
 
 <footer>
-  Same machine, same data, same question &mdash; streaming used a few MB and finished;
-  loading needed ~2&times; the machine's RAM just to hold one-fifth of the rows. That is the breaking point.
+  Same laptop, same data, same question. Streaming used a few MB and finished.
+  Loading needed about twice the laptop's memory just to hold one fifth of the rows. That is the breaking point.
 </footer>
 
 </body>
