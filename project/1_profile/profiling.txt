@@ -1,29 +1,205 @@
-CS 131 Final Project — Phase 1: Profiling
-Dataset: ESA Gaia DR3 gaia_source (GaiaSource_*.csv.gz)
+================================================================
+ CS 131 - Phase 1: Profiling
+================================================================
+ Dataset : ESA Gaia DR3 gaia_source
+           121 of 3,386 files (every 28th file -> all-sky sample)
+ Machine : AMD Ryzen 5 240, 6C/12T, 15.3 GB RAM
+           Windows 11, Git Bash (MINGW64)
+ Date    : 2026-07-26
 
-Goal: characterize the data WITHOUT loading it into memory.
-Put `time` in front of every command and paste the command + timing/output below.
+ The files are gzip-compressed, so every command pipes through `zcat`
+ to decompress on the fly. Each Gaia file also starts with 1000 comment
+ lines beginning with '#', so `grep -v '^#'` strips them before counting
+ (the ^ means "line starts with"). `time` reports how long a command took.
+================================================================
 
-NOTE: Gaia bulk CSVs start with '#' comment/units lines, then one header row,
-then comma-separated data. Inspect first:   zcat <file>.csv.gz | head -40
-Strip comments with `grep -v '^#'`; the header is one line.
 
-============================================================================
-[ TODO — record each command and its `time` output below ]
+----------------------------------------------------------------
+ Acquisition (before profiling)
+----------------------------------------------------------------
 
-# 1) Size on disk (whole slice)
-#    time du -sh ~/gaia_raw
-#    time gsutil du -sh gs://<bucket>/gaia/
+# Download the file index and extract the file names
+$ curl -o md5.txt https://cdn.gea.esac.esa.int/Gaia/gdr3/gaia_source/_MD5SUM.txt
+$ awk '{print $2}' md5.txt > allfiles.txt
+$ wc -l allfiles.txt
+3387 allfiles.txt        # 3386 data files + the index's own entry
 
-# 2) Row count of one partition (exclude '#' comments)
-#    time bash -c "zcat <file>.csv.gz | grep -vc '^#'"
+# Take every 28th file so the sample is spread across the whole sky
+$ awk 'NR % 28 == 1' allfiles.txt > filelist.txt
+$ wc -l filelist.txt
+121 filelist.txt
 
-# 3) Schema — list column names with indices
-#    zcat <file>.csv.gz | grep -v '^#' | head -1 | tr ',' '\n' | nl
+# Download the 121 files into data/  (25 GB, 6 parallel, ~63 MB/s)
+$ xargs -a filelist.txt -P 6 -I{} curl -s -o "data/{}" \
+    "https://cdn.gea.esac.esa.int/Gaia/gdr3/gaia_source/{}"
+   ... 6m47s ...
+$ ls data/*.csv.gz | wc -l
+121
 
-# 4) Numeric aggregate (awk) — mean parallax over the slice
 
-# 5) Cardinality (sort | uniq -c | sort -nr) — has-RV vs no-RV split
+================================================================
+ 1. HOW BIG IS IT?   (du)      -> proves the > 5 GB requirement
+================================================================
 
-# 6) grep -c filtering count — total data rows across the slice ( > 50,000,000 )
-============================================================================
+$ time du -sh data/
+26G     data/
+real    0m0.2s
+
+$ time du -h data/GaiaSource_000000-003111.csv.gz
+223M    data/GaiaSource_000000-003111.csv.gz
+real    0m0.1s
+
+  26 GB on disk across 121 files.  Requirement (> 5 GB): PASS.
+
+
+================================================================
+ 2. WHAT'S IN THE FILE?   (zcat | head)
+================================================================
+
+$ zcat data/GaiaSource_000000-003111.csv.gz | head -25
+# %ECSV 1.0
+# ---
+# delimiter: ','
+# meta: !!omap
+# - RELEASE: Gaia DR3
+# - TABLE: gaia_source
+# - DESCRIPTION: >  ...
+# datatype:
+# -
+#   name: solution_id
+#   datatype: int64
+#   ...
+  (1000 lines of '#' metadata, then the header row, then the data)
+
+# Count the metadata lines
+$ time zcat data/GaiaSource_000000-003111.csv.gz | grep -c '^#'
+1000
+real    0m4.8s
+
+  Every file has a 1000-line '#' header block. This is why a plain
+  csv reader chokes - it tries to parse the metadata as data.
+
+
+================================================================
+ 3. THE SCHEMA   (cut / column)  - how many columns, which ones
+================================================================
+
+# List every column name, numbered
+$ zcat data/GaiaSource_000000-003111.csv.gz | grep -v '^#' | head -1 \
+    | tr ',' '\n' | nl > schema.txt
+$ wc -l schema.txt
+152 schema.txt
+
+  152 columns per row. The ones this project uses:
+     3  source_id           12  parallax_over_error
+     6  ra                  14  pmra
+     8  dec                 16  pmdec
+    10  parallax            56  ruwe
+    11  parallax_error      70  phot_g_mean_mag
+                            90  radial_velocity
+
+# Show a few columns of the first rows, lined up in a table
+$ zcat data/GaiaSource_000000-003111.csv.gz | grep -v '^#' | head -6 \
+    | cut -d',' -f3,6,8,10 | column -t -s','
+source_id     ra                  dec                    parallax
+4295806720    44.99615537864534   0.005615226341865997   0.3543305595550248
+34361129088   45.00432028915398   0.021047763781174733   3.235017271512856
+38655544960   45.004978371745516  0.019879675701858644   3.1391701154499523
+309238066432  44.99503714416301   0.03815169755425531    1.383149618921834
+343597448960  44.96389626549711   0.04359494367771267    0.196147669341387
+
+
+================================================================
+ 4. HOW MANY ROWS?   (wc -l)  - one file
+================================================================
+
+$ time zcat data/GaiaSource_000000-003111.csv.gz | grep -v '^#' | wc -l
+528334
+real    0m4.7s
+
+  528,334 lines = 528,333 data rows + 1 header row.
+
+
+================================================================
+ 5. A NUMERIC AGGREGATE   (awk)  - average of a column
+================================================================
+
+# Average the parallax column (field 10), skipping blanks
+$ time zcat data/GaiaSource_000000-003111.csv.gz | grep -v '^#' \
+    | awk -F',' 'NR>1 && $10!="" {sum+=$10; n++} END {print sum/n, "mas over", n, "stars"}'
+0.942832 mas over 528333 stars
+real    0m4.7s
+
+  awk keeps only a running sum and a count in memory - a few bytes -
+  while 223 MB streams past. Same aggregation is repeated in pandas
+  (Phase 2) and Spark (Phase 3).
+
+
+================================================================
+ 6. TOP CATEGORIES   (sort | uniq -c | sort -nr)
+================================================================
+
+# Count stars by whole-number G magnitude (field 70)
+$ time zcat data/GaiaSource_000000-003111.csv.gz | grep -v '^#' \
+    | awk -F',' 'NR>1 && $70!="" {print int($70)}' \
+    | sort -n | uniq -c | sort -nr | head -15
+ 156663 20
+ 110268 19
+  79123 18
+  55839 17
+  39034 16
+  25869 21
+  25834 15
+  16225 14
+   9234 13
+   4904 12
+   2458 11
+   1196 10
+    690 0
+    565 9
+    205 8
+real    0m5.1s
+
+  Faint stars (magnitude 19-20) far outnumber bright ones - Gaia sees
+  many more dim distant stars than bright nearby ones.
+
+
+================================================================
+ 7. A FILTERING COUNT   (grep -c)
+================================================================
+
+$ time zcat data/GaiaSource_000000-003111.csv.gz | grep -c 'VARIABLE'
+5345
+real    0m4.8s
+
+  5,345 rows flagged VARIABLE (brightness changes over time).
+
+
+================================================================
+ 8. THE HEADLINE NUMBER   (wc across ALL 121 files)
+    -> proves the > 50 million rows requirement
+================================================================
+
+$ time zcat data/*.csv.gz | grep -v '^#' | wc -l
+64681520
+real    9m0s
+
+  64,681,520 lines - 121 header rows (one per file) = 64,681,399 data rows.
+  Requirement (> 50,000,000 rows): PASS (1.29x margin).
+
+  All 26 GB (~120 GB uncompressed) streamed through one pipe in 9 minutes
+  using only a few MB of RAM the entire time. The machine has 15.3 GB but
+  never needed more than a trickle: zcat | grep | wc never hold the data,
+  they pass it through line by line.
+
+
+================================================================
+ SUMMARY
+================================================================
+   files on disk ............ 121
+   size on disk ............. 26 GB compressed  (> 5 GB      PASS)
+   columns per row .......... 152
+   metadata lines per file .. 1000  ('#' block)
+   data rows (all files) .... 64,681,399        (> 50,000,000 PASS)
+   peak RAM (any command) ... a few MB, constant regardless of file size
+================================================================
