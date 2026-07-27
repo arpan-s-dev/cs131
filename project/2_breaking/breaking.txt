@@ -1,31 +1,95 @@
-CS 131 Final Project — Phase 2: The Breaking Point
-Dataset: ESA Gaia DR3 gaia_source
+================================================================
+ CS 131 - Phase 2: The Breaking Point
+================================================================
+ Same dataset as Phase 1: ESA Gaia DR3, 121 files, 26 GB compressed,
+ 64,681,399 rows, 152 columns.  Machine: Ryzen 5 240, 15.3 GB RAM.
 
-Goal: document Excel and pandas FAILING on data past their limits, then show the
-same aggregation succeeds via the command line and via PySpark. Build the
-benchmark table.
+ Goal: show that the tools which LOAD data into memory (Excel, pandas)
+ fail on this dataset, while the tool that STREAMS it (Phase 1 CLI)
+ handled the same work in a few MB of RAM.
+================================================================
 
-============================================================================
-(a) Excel row cap
-    - Build a >1,048,576-row CSV, open in Excel -> it truncates / "File not
-      loaded completely".
-    - Screenshot: screenshots/excel_rowcap.png          [ TODO ]
 
-(b) pandas out-of-memory
-    - pd.read_csv() on the full ~15-20 GB CSV -> MemoryError / machine swaps.
-    - Screenshot: screenshots/pandas_oom.png            [ TODO ]
+----------------------------------------------------------------
+ 1. EXCEL
+----------------------------------------------------------------
+Action : File -> Open on a raw Gaia .csv file.
+Result : Excel hangs on load. The status bar reads
+         "CSV Opening: GaiaSource_023059-023264. Press ESC to cancel."
+         and cell A1 shows "# %ECSV 1.0" - Excel is trying to parse the
+         1000 lines of '#' metadata as spreadsheet rows.
 
-(c) Same aggregation two ways (mean parallax) — must agree
-    - CLI (awk, streamed):   result = [ TODO ]
-    - PySpark (avg):         result = [ TODO ]
+Two separate failures:
+  (a) Excel's hard row cap is 1,048,576 rows.
+      - one Gaia file  =    528,333 rows  (fits, but is only 1 of 121)
+      - two files      >  1,048,576 rows  (already over the cap)
+      - full dataset   = 64,681,399 rows  = 61.7x the cap
+  (b) It cannot even parse the ECSV format - the '#' metadata block
+      is read as data, so the columns are garbage.
 
-Benchmark table                                          [ TODO — fill in ]
-    tool     | rows attempted | peak memory | wall-clock | outcome
-    ---------+----------------+-------------+------------+-------------------
-    Excel    |                |             |            | truncated @ 1.05M
-    pandas   |                |             |            | OOM
-    CLI awk  |                |             |            | OK
-    PySpark  |                |             |            | OK
+Screenshot: screenshots/excel_fail.png
+Conclusion: Excel cannot open even a single file cleanly, and is
+            physically incapable of holding the dataset.
 
-Screenshots stored under: 2_breaking/screenshots/
-============================================================================
+
+----------------------------------------------------------------
+ 2. PANDAS   (pd.read_csv, loading every file into memory)
+----------------------------------------------------------------
+Script : try_pandas.py   (loads files one by one, keeps them all)
+Command: python -u cs131/project/2_breaking/try_pandas.py \
+             2>&1 | tee pandas_output.txt
+
+What happened (full ladder in pandas_output.txt):
+
+   file  1/121   rows:    528,333   ( 23s)
+   file  8/121   rows:  4,124,146   (161s)
+   file 24/121   rows: 12,400,114   (488s)   <- stopped here
+
+At file 24 the machine was out of usable memory. Task Manager at that
+point (screenshots/pandas_fail.png):
+
+   Memory in use ...... 13.6 / 15.3 GB   (89%)
+   Available .......... 1.7 GB
+   Committed .......... 29.3 / 40.3 GB   <- the real number
+   Memory graph ....... near-vertical climb, pinned at the ceiling
+
+Important detail: the script's own RAM readout (psutil) only showed
+~5-6 GB, because Windows was COMPRESSING memory to cope. The true
+demand is the "Committed" figure: 29.3 GB - almost 2x the 15.3 GB of
+physical RAM - to hold just 12.4 M of the 64.7 M rows (~1/5).
+
+Projection: ~1 GB of committed memory per file. All 121 files would
+need ~120 GB, far beyond this machine's 40.3 GB commit limit. pandas
+cannot load the dataset; a MemoryError is unavoidable well before the
+end. This matches the assignment's expectation of an out-of-memory
+failure (documented here via the memory blowup rather than waiting for
+the machine to thrash to a hard crash).
+
+
+----------------------------------------------------------------
+ 3. BENCHMARK - the SAME aggregation, streaming vs loading
+----------------------------------------------------------------
+Task: average the parallax column.
+
+   Tool                 Approach              Peak memory     Result
+   ------------------   -------------------   -------------   ------------------
+   CLI (zcat | awk)     streams line by line  a few MB        0.9428 mas  [OK]
+   pandas read_csv      loads all rows first  29.3 GB commit  FAILS (OOM)  [X]
+
+The CLI answered the question over all 64.7 M rows using a few MB.
+pandas could not even finish loading the data to begin the same
+calculation.
+
+
+----------------------------------------------------------------
+ THE POINT
+----------------------------------------------------------------
+Same machine. Same data. Same question. The only thing that changed
+was whether the tool holds the data in memory or streams past it:
+
+   Phase 1  streaming (awk)     ->  a few MB, constant   ->  WORKS
+   Phase 2  loading  (pandas)   ->  29+ GB, unbounded    ->  BREAKS
+
+That is the breaking point, and it is the reason Phase 3 moves to a
+distributed engine (Spark) that spreads the data across machines.
+================================================================
