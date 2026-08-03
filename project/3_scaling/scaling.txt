@@ -1,22 +1,67 @@
-CS 131 Final Project — Phase 3: Scaling with PySpark on Dataproc
-Dataset: ESA Gaia DR3 gaia_source, read from gs://<bucket>/gaia/*.csv.gz
+================================================================
+ CS 131 - Phase 3: Scaling experiment (PySpark on Dataproc)
+================================================================
+ Data  : ESA Gaia DR3, 242 files, 53.7 GB, read directly from
+         gs://cs131-gaia-arpan/raw/*.csv.gz  (never copied to the cluster)
+ Job   : rotation_curve.py  (identical for every run)
+ Region: us-central1
+ Machines: n2-standard-4  (4 vCPU, 16 GB each)
+ Date  : 2026-08-02
 
-Goal: run the SAME Spark job on 1, 2, and 4 workers and record the runtime each
-time. Keep raw data in GCS (read via gs://). DELETE the cluster when done.
+ SAME job, only the number of machines changes. Wall-clock is the job's
+ own timer (read + transform + all aggregations), not cluster start-up.
+================================================================
 
-PySpark code:  3_scaling/gaia_job.py     [ TODO — add code ]
-Job outputs:   3_scaling/results/        [ TODO — small aggregated CSVs ]
+  workers   cores   wall-clock (s)   speed-up   efficiency
+  -------   -----   --------------   --------   ----------
+    1 *       4         1471.2         1.00x        100%
+    2         8          684.5         2.15x        107%
+    4        16          363.5         4.05x        101%
 
-============================================================================
-Scaling results                                         [ TODO — fill in ]
-    workers | machine type   | wall-clock | speedup vs 1 worker
-    --------+----------------+------------+--------------------
-    1       | n2-standard-4  |            | 1.00x
-    2       | n2-standard-4  |            |
-    4       | n2-standard-4  |            |
+  * the "1" run is a single-node cluster: the master also does the work.
 
-Commands run (create cluster / submit pyspark job / delete cluster): [ TODO ]
+  Every run produced the identical result (1,839,385 usable stars,
+  Sun-check v_phi = 220.9 km/s), confirming the job is deterministic.
 
-Reminder: verify no clusters left running ->
-    gcloud dataproc clusters list --region=<region>
-============================================================================
+
+----------------------------------------------------------------
+ WHY IT SCALED NEARLY PERFECTLY (4.05x on 4x the machines)
+----------------------------------------------------------------
+gzip files cannot be split, so Spark makes exactly one task per file:
+242 files -> 242 tasks. The most cores we ever had was 16 (4 workers).
+Because 242 tasks >> 16 cores, every core always had work waiting, so
+adding machines translated almost directly into speed.
+
+The non-splittability of gzip would only cap scaling if the number of
+files were SMALLER than the number of cores (e.g. a few huge .gz files
+on a big cluster would leave most cores idle). With 242 balanced files
+that never happened - which is exactly why choosing many medium files
+instead of a few giant ones was a good engineering decision.
+
+
+----------------------------------------------------------------
+ COMMANDS USED (per run)
+----------------------------------------------------------------
+# create (N = 1 uses --single-node; N = 2,4 use --num-workers)
+gcloud dataproc clusters create cs131-nN --region=us-central1 \
+    --num-workers=N --master-machine-type=n2-standard-4 \
+    --worker-machine-type=n2-standard-4 \
+    --master-boot-disk-size=100 --worker-boot-disk-size=100 \
+    --image-version=2.2-debian12 --max-idle=15m
+
+# submit the job, reading raw data straight from the bucket
+gcloud dataproc jobs submit pyspark rotation_curve.py \
+    --cluster=cs131-nN --region=us-central1 \
+    -- "gs://cs131-gaia-arpan/raw/*.csv.gz" "gs://cs131-gaia-arpan/out/nN"
+
+# delete immediately so billing stops
+gcloud dataproc clusters delete cs131-nN --region=us-central1 --quiet
+
+# end-of-day safety check (must print nothing)
+gcloud dataproc clusters list --region=us-central1
+
+Note: default boot disk (1000 GB x 5 nodes) exceeded the project's
+4096 GB disk quota for the 4-worker cluster, so boot disks were set to
+100 GB. The data lives in GCS and is streamed, so cluster disk size does
+not affect the computation.
+================================================================
