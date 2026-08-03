@@ -1,3 +1,0 @@
-# Small aggregated Spark outputs go here (NOT raw data):
-#   rotation/ — mean orbital speed per galactocentric-radius bin (the rotation curve)
-#   fast/     — stars above escape velocity (the runaways), for the sky map

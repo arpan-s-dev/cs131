@@ -1,3 +1,0 @@
-# Excel + pandas failure screenshots go here:
-#   excel_rowcap.png   — Excel truncating at 1,048,576 rows
-#   pandas_oom.png     — pd.read_csv() MemoryError / memory blowup
